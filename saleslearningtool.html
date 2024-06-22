@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Sales Learning Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .stage {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #e9e9e9;
+            border-radius: 5px;
+        }
+        .stage h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        button {
+            background: #3498db;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        #quiz {
+            margin-top: 20px;
+        }
+        #progressBar {
+            width: 100%;
+            background-color: #ddd;
+            margin-bottom: 20px;
+        }
+        #progress {
+            width: 0;
+            height: 30px;
+            background-color: #4CAF50;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+        }
+        .quiz-question {
+            margin-bottom: 15px;
+        }
+        .quiz-options label {
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Interactive Sales Learning Tool</h1>
+        <div id="progressBar">
+            <div id="progress">0%</div>
+        </div>
+        <div id="content"></div>
+        <button id="nextBtn">Next Stage</button>
+        <div id="quiz"></div>
+    </div>
+
+    <script>
+        const stages = [
+            {
+                name: "Building Rapport",
+                description: "Focus on creating a connection with the potential client.",
+                tips: ["Use open-ended questions", "Practice active listening", "Find common ground"],
+                question: "What is the primary goal of building rapport?",
+                options: ["To make a sale immediately", "To create a connection with the client", "To showcase all product features", "To rush through the sales process"],
+                correctAnswer: 1
+            },
+            {
+                name: "Needs Assessment",
+                description: "Understand the client's current situation and challenges.",
+                tips: ["Ask about their goals", "Inquire about pain points", "Discuss their ideal outcomes"],
+                question: "Why is needs assessment important?",
+                options: ["To sell the most expensive product", "To understand the client's challenges", "To skip to the closing stage", "To avoid talking about the product"],
+                correctAnswer: 1
+            },
+            {
+                name: "Solution Presentation",
+                description: "Present your product or service as a solution to their needs.",
+                tips: ["Tailor your presentation to their specific needs", "Highlight key benefits", "Use storytelling to illustrate value"],
+                question: "What should you focus on during solution presentation?",
+                options: ["Technical specifications only", "Your company's history", "How the product solves the client's problems", "Criticizing competitors"],
+                correctAnswer: 2
+            },
+            {
+                name: "Handling Objections",
+                description: "Address any concerns or hesitations the client may have.",
+                tips: ["Listen carefully to objections", "Acknowledge their concerns", "Provide evidence to support your claims"],
+                question: "What is the first step in handling objections?",
+                options: ["Argue with the client", "Ignore the objection", "Listen carefully to the concern", "Offer a discount immediately"],
+                correctAnswer: 2
+            },
+            {
+                name: "Closing the Sale",
+                description: "Guide the client towards making a commitment.",
+                tips: ["Summarize the benefits", "Ask for the sale confidently", "Discuss next steps"],
+                question: "What should you do when closing the sale?",
+                options: ["Wait for the client to bring it up", "Summarize benefits and ask for commitment", "Avoid mentioning price", "End the meeting quickly"],
+                correctAnswer: 1
+            }
+        ];
+
+        let currentStage = 0;
+
+        function displayStage(index) {
+            const stage = stages[index];
+            let html = `
+                <div class="stage">
+                    <h2>${stage.name}</h2>
+                    <p>${stage.description}</p>
+                    <ul>
+                        ${stage.tips.map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = html;
+            updateProgress();
+        }
+
+        function nextStage() {
+            if (currentStage < stages.length - 1) {
+                currentStage++;
+                displayStage(currentStage);
+            } else {
+                startQuiz();
+            }
+        }
+
+        function updateProgress() {
+            const progressPercent = ((currentStage + 1) / stages.length) * 100;
+            document.getElementById('progress').style.width = progressPercent + '%';
+            document.getElementById('progress').innerText = Math.round(progressPercent) + '%';
+        }
+
+        function startQuiz() {
+            let quizHtml = '<h2>Knowledge Check</h2>';
+            stages.forEach((stage, index) => {
+                quizHtml += `
+                    <div class="quiz-question">
+                        <p><strong>Q${index + 1}:</strong> ${stage.question}</p>
+                        <div class="quiz-options">
+                            ${stage.options.map((option, optionIndex) => `
+                                <label>
+                                    <input type="radio" name="q${index}" value="${optionIndex}">
+                                    ${option}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            quizHtml += '<button onclick="checkAnswers()">Submit Answers</button>';
+            document.getElementById('content').innerHTML = quizHtml;
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        function checkAnswers() {
+            let score = 0;
+            stages.forEach((stage, index) => {
+                const selectedAnswer = document.querySelector(`input[name="q${index}"]:checked`);
+                if (selectedAnswer && parseInt(selectedAnswer.value) === stage.correctAnswer) {
+                    score++;
+                }
+            });
+            const percentage = (score / stages.length) * 100;
+            alert(`You scored ${score} out of ${stages.length} (${percentage}%)`);
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', nextStage);
+
+        // Initial display
+        displayStage(currentStage);
+    </script>
+</body>
+</html>
